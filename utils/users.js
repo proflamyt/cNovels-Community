@@ -1,30 +1,27 @@
-io.use((socket, next) => {
-    //redis on  connection get the session from django and store
-    const sessionID = socket.handshake.auth.sessionID;
-    if (sessionID) {
-      // find existing session
-      const session = sessionStore.findSession(sessionID);
-      if (session) {
-        socket.sessionID = sessionID;
-        socket.userID = session.userID;
-        socket.username = session.username;
-        return next();
-      }
-    }
-    const username = socket.handshake.auth.username;
-    if (!username) {
-      return next(new Error("invalid username"));
-    }
-    // create new session
-    socket.sessionID = randomId();
-    socket.userID = randomId();
-    socket.username = username;
-    next();
-  });
+//import { createClient ,sismember,smembers, exists} from 'redis';
+const {
+    client: redisClient,
+  
+    smembers,
+    sismember,
+    srem,
+    sub,
+    auth: runRedisAuth,
+  } = require('.\\redis');
+// const redis_client = createClient({
+//     host: '172.26.255.129',
+//     port: 6379,
+//    // password: '<password>'
+//   });
 
 
+async function userJoin(id, username, room){
+    //check if user is in group
+    await sismember(`user:${id}:rooms`, `${room}`, function(err, reply){
+        if (err) throw err;
+    console.log(reply);
+    });
 
-function userJoin(id, username, room){
     return {
         id,
         username,
@@ -37,15 +34,25 @@ function getCurrentUser(id){
 }
 
 //removes user from room 
-function userLeave(id){
+async function userLeave(userId){
 
-
+await srem("online_users", userId);
+const msg = {
+    ...socket.request.session.user,
+    online: false,
+  };
+return {
+    msg
+    
+}
 }
 
 function getRoomUsers(room){
+    
+    return smembers(`room:${room}:users`)
 
 }
-module.exports ={
+module.exports = {
     userJoin,
     getCurrentUser, 
     userLeave,
