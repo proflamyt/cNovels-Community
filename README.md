@@ -5,6 +5,9 @@ docker ps -a
 docker exec -it <CONTAINER_NAME|ID> sh
 
 
+# Run
+
+
 npm i 
 
 npm run dev
