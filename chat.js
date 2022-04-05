@@ -4,6 +4,7 @@ const socketio = require('socket.io');
 const http = require('http');
 const formatMessage = require('.\\utils\\messages');
 const jwt = require('jsonwebtoken');
+const redis = require('redis');
 const { userJoin, getCurrentUser,userLeave, getRoomUsers } = require('.\\utils\\users');
 const {
   client: redisClient,
@@ -52,7 +53,17 @@ bot = 'cNovels'
 // console.log('Error ' + err);
 // });
 
-
+redisClient.on('error', (err) => {
+  console.log('Error occured while connecting or accessing redis server');
+});
+if(!redisClient.get('customer_name',redis.print)) {
+  //create a new record
+  redisClient.set('customer_name','John Doe', redis.print);
+  console.log('Writing Property : customer_name');
+} else {
+  let val = redisClient.get('customer_name',redis.print);
+  console.log(`Reading property : customer_name - ${val}`);
+}
 
 
 
@@ -97,22 +108,18 @@ io.use(function(socket, next){
     const userID = socket.decoded_token.user_id;
     const username = socket.decoded_token.username;
 
-    //console.log(userID);
-    console.log(username);
+    // store all user details temporarily on redis , update the django postgres later 
 
-    // redis_client.on("message", function (channel, message) {
-    //   console.log("Message: " + message +   "on channel:" + channel + "is arrive!" );
-    //   //authenticate user 
-    //   } );
-    const ola = await smembers(`user:${userID}:rooms`);
-    //send all users group to user
-    socket.emit("groups", ola);
-    //room is ID 
+    // TODO: get all rooms user is a member of on django , must verify on redis 
+   
+    // join room with room ID   and update redis to verify where users can send message
+
     socket.on('joinRoom', async (room) => {
-
+      
+      // add user to redis room and update django if not already in group
       const user = userJoin(userID, username, room);
 
-      console.log(userID);
+      // add to online user of that room 
 
       await sadd(`online_users:${user.room}`, userID);
 
@@ -120,13 +127,14 @@ io.use(function(socket, next){
 
       console.log('a user is connected');
 
-      //single connected client 
+      //single connected client in the group
+
       socket.emit('message', formatMessage(bot, 'welcome to the group'));
 
       //every client except connected user
       socket.broadcast.to(user.room).emit('message', formatMessage(bot, `a ${user.username} has connected`));
 
-
+      // lists of users in that room5
       io.to(user.room).emit('roomUsers', {
         users: getRoomUsers(user.room),
       });

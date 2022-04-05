@@ -2,7 +2,7 @@
 //require("dotenv").config();
 const redis = require("redis");
 
-const endpoint = process.env.REDIS_ENDPOINT_URL || "172.31.77.176:6360";
+const endpoint = process.env.REDIS_ENDPOINT_URL || "127.0.0.1:6379";
 const password = process.env.REDIS_PASSWORD || null;
 const [host, port] = endpoint.split(":");
 
@@ -39,6 +39,7 @@ module.exports = {
     await auth(sub);
   },
   incr: (key = "key") =>
+    // @ts-ignore
     new Promise((a, b) => client.incr(key, resolvePromise(a, b))),
   decr: (key = "key") =>
     new Promise((a, b) => client.decr(key, resolvePromise(a, b))),

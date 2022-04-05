@@ -1,0 +1,14 @@
+<script>
+
+
+
+const {token} = sessionStorage;
+const socket = io.connect('http://localhost:3000');
+socket.on('connect', function (socket) {
+  socket
+    .on('authenticated', function () {
+      //do other things
+    })
+    .emit('authenticate', {token}); //send the jwt
+});
+    </script>
