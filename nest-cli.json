@@ -3,6 +3,18 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true
+  },
+  "projects": {
+    "redislib": {
+      "type": "library",
+      "root": "libs/redislib",
+      "entryFile": "index",
+      "sourceRoot": "libs/redislib/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/redislib/tsconfig.lib.json"
+      }
+    }
   }
 }

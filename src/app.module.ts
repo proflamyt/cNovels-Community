@@ -5,9 +5,13 @@ import { ChatGateway } from './chat/chat.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './contants/auth.constant';
 import { NotificationGateway } from './notification/notification.gateway';
+import { RedislibModule } from '@app/redislib';
+import { GroupsGateway } from './groups/groups.gateway';
+
 
 @Module({
   imports: [
+    RedislibModule,
     JwtModule.register({
       secret: jwtConstants.secret,
       global: true,
@@ -15,6 +19,6 @@ import { NotificationGateway } from './notification/notification.gateway';
     })
   ],
   controllers: [AppController],
-  providers: [AppService, ChatGateway, NotificationGateway],
+  providers: [AppService, ChatGateway, NotificationGateway, GroupsGateway],
 })
 export class AppModule {}

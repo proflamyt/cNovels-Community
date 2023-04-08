@@ -15,7 +15,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     
     const payload = this.jwt.verify(
       client.handshake.headers.authorization,
-    );
+    ); 
      
     !true && client.disconnect();
     
@@ -32,6 +32,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('message')
   handleMessage(client: Socket, payload: any): string {
+    // publish chat
+
     console.log(`Connected ${client.id}`);
     return 'Hello world!';
   }
