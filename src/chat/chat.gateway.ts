@@ -2,8 +2,9 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { Socket, Server } from 'socket.io';
 import { JwtService } from "@nestjs/jwt";
 import { RedislibService } from '@app/redislib';
+import { Payload, SocketInterface } from './interface';
 
-@WebSocketGateway()
+@WebSocketGateway({ namespace: '/chat' })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
@@ -13,59 +14,67 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer()
   server: Server;
 
-  handleConnection(client: Socket, ...args: any[]) {
+  handleConnection(client: SocketInterface, ...args: any[]) {
 
     try {
+
       const payload = this.jwt.verify(
       client.handshake.headers.authorization,
       );
-      !true && client.disconnect();
+
+      !payload.sub && client.disconnect();
+
+      client.userId = payload.sub
+      client.username = payload.username
+      client.join(client.userId)
+      
       
     }
     catch (error) {
-
-      console.error(error)
       client.disconnect();
- }   
+        }   
   }
 
   afterInit(server: Server) {
     
   }
 
-  handleDisconnect(client: Socket) {
-    
-  }
+  async handleDisconnect(client: SocketInterface) {
 
-  @SubscribeMessage('send_message')
-  async listenForMessages(
-    @MessageBody() content: string,
-    @ConnectedSocket() socket: Socket,
-  ) {
-    // const author = await this.chatService.getUserFromSocket(socket);
-    const payload = {
-      content,
-      user: socket.id
+    const matchingSockets = await this.server.in(client.userId).allSockets();
+    
+    const isDisconnected = matchingSockets.size === 0;
+    if (isDisconnected) {
+      // notify other users
+      
+      client.broadcast.emit("privateMessage", client.userId);
+      // update the connection status of the session
+      
     }
-    this.redisService.publish('chat', payload)
- 
-    this.server.sockets.emit('receive_message', content);
- 
-    return content;
-  }
-
-
-  @SubscribeMessage('message')
-  handleMessage(client: Socket, payload: any): string {
-    // publish chat
     
-    console.log(`Connected ${client.id}`);
-    return 'Hello world!';
   }
 
-  
+  @SubscribeMessage('privateMessage')
+  async handlePrivateMessage(client: SocketInterface, receivedPayload:string ) {
 
+      try {
+            const payload: Payload = JSON.parse(receivedPayload)
+        
+            const from = client.userId;
+        
+            payload.from = from;
 
+            this.redisService.publish('chat', payload)
+
+            client.to(payload.to).to(from).emit('privateMessages', { content: payload.content, from, to: payload.to });
+
+      } catch (error) {
+
+        console.log(error)
+        
+}
+    
+  }
 
 
 }

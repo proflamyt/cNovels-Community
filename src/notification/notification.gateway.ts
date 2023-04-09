@@ -4,7 +4,7 @@ import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 
 
-@WebSocketGateway()
+@WebSocketGateway({ namespace: '/notification' })
 export class NotificationGateway {
 
   constructor(private redisService: RedislibService) {

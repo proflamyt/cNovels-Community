@@ -1,5 +1,5 @@
 export const jwtConstants = {
-    secret: process.env.JWT,
+    secret: 'olamide' || process.env.JWT,
     period: '60s'
 
   };

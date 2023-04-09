@@ -2,7 +2,7 @@ import { OnGatewayConnection, OnGatewayDisconnect,
    SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway({ namespace: '/group' })
 export class GroupsGateway implements OnGatewayConnection, OnGatewayDisconnect  {
 
   @WebSocketServer() server:Server;
