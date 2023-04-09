@@ -7,7 +7,7 @@ import { Socket, Server } from 'socket.io';
 @WebSocketGateway()
 export class NotificationGateway {
 
-  constructor(private readonly redisService: RedislibService) {
+  constructor(private redisService: RedislibService) {
     this.redisService.subscribe('notifications')
   }
 
@@ -19,13 +19,14 @@ export class NotificationGateway {
 
       // subscribe to notifications from redis
       const message: string = await this.redisService.onReceive('notifications')
-      client.emit(message)
+
+      client.send(message)
 
     }
     catch (error) {
+      console.log(error)
       return error
-    }
-  
+    } 
   }
 
 

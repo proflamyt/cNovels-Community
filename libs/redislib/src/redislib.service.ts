@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import Redis from "ioredis";
 
-const redis = new Redis();
+const redis = new Redis("172.20.60.186");
+const redispub = new Redis("172.20.60.186");
 
 @Injectable()
 export class RedislibService {
@@ -40,9 +41,9 @@ export class RedislibService {
     }
 
 
-    async publish(channel: string, message: {string}) {
+    async publish(channel: string, message: {}) {
 
-        redis.publish(channel, JSON.stringify({ ...message }));
+        redispub.publish(channel, JSON.stringify({ ...message }));
 
     }
 
