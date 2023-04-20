@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import Redis from "ioredis";
+import { eventEmitter } from '../../../../community/src/utils';
 
-const redis = new Redis("172.20.60.186");
-const redispub = new Redis("172.20.60.186");
+const redis = new Redis("172.31.29.152");
+const redispub = new Redis("172.31.29.152");
 
 @Injectable()
 export class RedislibService {
-
+  
     async subscribe(channel: string) {
 
         return new Promise((resolve, reject) => {
@@ -30,9 +31,12 @@ export class RedislibService {
                 console.log(`Received message from ${channel} channel.`);
                 try {
                   const parsedMessage = JSON.parse(message);
+                  eventEmitter.emit('eventName', parsedMessage)
+                  console.log("ok")
                   resolve(parsedMessage);
                 } catch (err) {
-                  reject(err);
+                  console.log(message)
+                  console.log(err);
                 }
               }
             });

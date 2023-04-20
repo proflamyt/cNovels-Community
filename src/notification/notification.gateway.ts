@@ -9,6 +9,7 @@ export class NotificationGateway {
 
   constructor(private redisService: RedislibService) {
     this.redisService.subscribe('notifications')
+    
   }
 
 
@@ -19,6 +20,8 @@ export class NotificationGateway {
 
       // subscribe to notifications from redis
       const message: string = await this.redisService.onReceive('notifications')
+      console.log(message)
+      client.broadcast.emit("ola", message);
 
       client.send(message)
 

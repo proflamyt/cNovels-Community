@@ -1,29 +1,32 @@
-import { Controller, Get, Sse } from '@nestjs/common';
+import { Controller, Get, Sse, Request } from '@nestjs/common';
 import { AppService } from './app.service';
-import { Observable } from 'rxjs';
+import { Observable, interval, map, tap } from 'rxjs';
 import { RedislibService } from '@app/redislib';
 
 @Controller()
 export class AppController {
-  constructor(private redisService: RedislibService,
-    private appService
+  constructor(
+    private redisService: RedislibService,
+    private appService: AppService
     ) {
-    this.redisService.subscribe('notifications')
-  }
+      this.redisService.onReceive('notifications')
+    }
 
   @Get()
   getHello(): string {
     return this.appService.getHello();
   }
 
-  @Sse('sse')
-  async sse(): Promise<Observable<string>> {
+  @Sse('notifications')
+  sse(
+    @Request() req,
+    
+  ) {
 
     try {
-      const message: string = await this.redisService.onReceive('notifications')
-      return new Observable((observable) => {
-        observable.next(message)
-      })
+      return this.appService.subscribe().pipe(map((message) => ({ data: message })))
+     
+      
     } catch (error) {
       console.log(error)
       
