@@ -31,11 +31,10 @@ export class RedislibService {
                 console.log(`Received message from ${channel} channel.`);
                 try {
                   const parsedMessage = JSON.parse(message);
-                  eventEmitter.emit('eventName', parsedMessage)
-                  console.log("ok")
+                  eventEmitter.emit('liveNotification', parsedMessage)
                   resolve(parsedMessage);
                 } catch (err) {
-                  console.log(message)
+                 
                   console.log(err);
                 }
               }

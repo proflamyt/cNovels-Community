@@ -1,6 +1,6 @@
 import { Controller, Get, Sse, Request } from '@nestjs/common';
 import { AppService } from './app.service';
-import { Observable, interval, map, tap } from 'rxjs';
+import { Observable, map} from 'rxjs';
 import { RedislibService } from '@app/redislib';
 
 @Controller()
@@ -9,7 +9,8 @@ export class AppController {
     private redisService: RedislibService,
     private appService: AppService
     ) {
-      this.redisService.onReceive('notifications')
+      
+      this.redisService.onReceive('redis_notifications')
     }
 
   @Get()
@@ -18,14 +19,10 @@ export class AppController {
   }
 
   @Sse('notifications')
-  sse(
-    @Request() req,
-    
-  ) {
+  sse(): Observable<any> {
 
     try {
-      return this.appService.subscribe().pipe(map((message) => ({ data: message })))
-     
+      return this.appService.subscribeNotification(1).pipe(map((message) => ({ data: message })));
       
     } catch (error) {
       console.log(error)
